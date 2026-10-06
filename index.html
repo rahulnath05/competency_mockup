@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CompetencyOS v2 — Competency Learning Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="app">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">C</div>
+      <div class="brand-text">
+        <b>CompetencyOS</b>
+        <span>Learning workspace</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Workspace</div>
+      <button class="nav-item active" data-view="overview"><span class="nav-ico" data-icon="grid"></span>Overview</button>
+      <button class="nav-item" data-view="competencies"><span class="nav-ico" data-icon="layers"></span>Competencies<em id="navCompCount">12</em></button>
+      <button class="nav-item" data-view="people"><span class="nav-ico" data-icon="users"></span>People<em>248</em></button>
+      <button class="nav-item" data-view="reports"><span class="nav-ico" data-icon="chart"></span><span id="navReportsLabel">My reports</span><em id="navReportsBadge">me</em></button>
+      <button class="nav-item" data-view="content"><span class="nav-ico" data-icon="book"></span>Content library</button>
+      <button class="nav-item" data-view="assessment"><span class="nav-ico" data-icon="spark"></span>Assessment lab<em>IRT</em></button>
+    </div>
+
+    <!-- <div class="nav-group"> -->
+      <!-- <div class="nav-label">Blueprint</div> -->
+      <!-- <button class="nav-item" data-view="architecture"><span class="nav-ico" data-icon="layers"></span>Architecture</button> -->
+      <!-- <button class="nav-item" data-view="data"><span class="nav-ico" data-icon="grid"></span>Data model</button> -->
+      <!-- <button class="nav-item" data-view="workflows"><span class="nav-ico" data-icon="arrow"></span>Workflows</button> -->
+      <!-- <button class="nav-item" data-view="nfr"><span class="nav-ico" data-icon="target"></span>Non-functional</button> -->
+      <!-- <button class="nav-item" data-view="roadmap"><span class="nav-ico" data-icon="clock"></span>Roadmap</button> -->
+    <!-- </div> -->
+
+    <div class="sidebar-footer">
+      <div class="support-card">
+        <span data-icon="spark" data-size="18"></span>
+        <div>
+          <strong>Need help?</strong>
+          <p>Guidance on benchmarks, item banks and the re-assessment loop.</p>
+          <a href="#" onclick="toast('Support','Opening the competency programme playbook.');return false;">Open playbook →</a>
+        </div>
+      </div>
+      <div class="profile">
+        <div class="avatar avatar-light">AM</div>
+        <div>
+          <strong>Aarav Mehta</strong>
+          <span>Senior Associate · Data Analytics</span>
+        </div>
+        <button class="icon-button compact" data-icon-btn="chevron" title="Account" onclick="toast('Account','SSO session active — Azure AD, role-mapped.')"></button>
+      </div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ================= MAIN ================= -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-button menu-button" id="menuButton" aria-label="Toggle navigation"></button>
+      <div class="search-wrap">
+        <span data-icon="search" data-size="17"></span>
+        <input id="globalSearch" type="search" placeholder="Search people, skills or competencies" aria-label="Search" />
+        <kbd>⌘ K</kbd>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-button bell-button" id="notifButton" aria-label="Notifications" aria-expanded="false">
+          <span data-icon="bell" data-size="17"></span>
+          <span class="notif-count hidden" id="notifCount">0</span>
+        </button>
+        <div class="topbar-divider"></div>
+        <div class="topbar-date"><span>today</span><strong id="todayDate">—</strong></div>
+        <div class="notif-panel" id="notifPanel" aria-hidden="true"></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- persona switcher -->
+      <div class="persona-switcher" id="personaSwitcher" role="tablist" aria-label="Switch persona"></div>
+
+      <!-- ============ OVERVIEW ============ -->
+      <section class="view active" id="view-overview">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow" id="pageEyebrow">My development plan</span>
+            <h1 id="pageTitle">Good morning, Aarav.</h1>
+            <p id="pageLede">You're making strong progress toward your Senior Associate benchmark.</p>
+          </div>
+          <div class="page-actions" id="pageActions"></div>
+        </div>
+        <div id="overviewBody"></div>
+      </section>
+
+      <!-- ============ COMPETENCIES ============ -->
+      <section class="view" id="view-competencies">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Benchmark management</span>
+            <h1>Competencies</h1>
+            <p>Define role expectations, validate skill targets and manage published benchmark versions.</p>
+          </div>
+          <div class="page-actions">
+            <button class="button" onclick="validateAllTaxonomy()">Validate taxonomy</button>
+            <button class="button button-primary" onclick="newBenchmark()">New benchmark</button>
+          </div>
+        </div>
+        <div class="module-summary" id="compSummary"></div>
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Competency catalogue</h2>
+              <p>Skills, role coverage, versions and assignment volumes</p>
+            </div>
+            <div class="toolbar">
+              <select class="input" id="compStatusFilter" style="font:inherit;font-size:11.5px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:#fff">
+                <option value="all">All statuses</option>
+                <option value="Published">Published</option>
+                <option value="Draft">Draft</option>
+                <option value="Review">In review</option>
+              </select>
+            </div>
+          </div>
+          <div class="module-table" id="compTable"></div>
+        </div>
+      </section>
+
+      <!-- ============ PEOPLE ============ -->
+      <section class="view" id="view-people">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">People directory</span>
+            <h1>People</h1>
+            <p>Track assignments, proficiency gaps and learning progress across the organization.</p>
+          </div>
+          <div class="page-actions">
+            <button class="button" onclick="toast('Export queued','People directory (CSV) is being prepared.')">Export</button>
+            <button class="button button-primary" onclick="toast('Assign people','Select a benchmark version to assign to 12 additional employees.')">Assign people</button>
+          </div>
+        </div>
+        <div class="module-summary four" id="peopleSummary"></div>
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>All people</h2>
+              <p>248 employees · 6 competencies · benchmark cycles in flight</p>
+            </div>
+            <div class="toolbar">
+              <select class="input" id="peopleCompFilter"></select>
+              <select class="input" id="peopleStatusFilter">
+                <option value="all">All statuses</option>
+                <option value="On track">On track</option>
+                <option value="Behind">Behind</option>
+                <option value="Completed">Completed</option>
+                <option value="Failed">Failed</option>
+              </select>
+            </div>
+          </div>
+          <div class="people-directory" id="peopleTable"></div>
+        </div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section class="view" id="view-reports">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow" id="reportsEyebrow">Outcomes &amp; reporting</span>
+            <h1 id="reportsTitle">Reports</h1>
+            <p id="reportsLede">Measure completion, proficiency gains and time-to-close.</p>
+          </div>
+          <div class="page-actions" id="reportsActions"></div>
+        </div>
+        <div id="reportsBody"></div>
+      </section>
+
+      <!-- ============ CONTENT LIBRARY ============ -->
+      <section class="view" id="view-content">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Learning content service</span>
+            <h1>Content library</h1>
+            <p>Map internal and public resources to skills, levels and learning-plan sections.</p>
+          </div>
+          <div class="page-actions">
+            <button class="button" onclick="toast('Link validation','Checking 386 resources across LTI, SCORM and URL tracking…')">Validate links</button>
+            <button class="button button-primary" onclick="toast('Add content','Paste a URL or connect a provider to map new content to a skill.')">Add content</button>
+          </div>
+        </div>
+        <div class="module-summary four" id="contentSummary"></div>
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>All learning content</h2>
+              <p>Internal academy, LMS and public providers mapped to benchmark skills</p>
+            </div>
+            <div class="toolbar">
+              <select class="input" id="contentHealthFilter">
+                <option value="all">All health states</option>
+                <option value="Healthy">Healthy</option>
+                <option value="Review">Needs review</option>
+                <option value="Outdated">Outdated</option>
+                <option value="Broken">Broken</option>
+              </select>
+              <select class="input" id="contentTypeFilter">
+                <option value="all">All tracking types</option>
+                <option value="LTI">LTI 1.3</option>
+                <option value="SCORM">SCORM</option>
+                <option value="URL">URL</option>
+              </select>
+            </div>
+          </div>
+          <div class="library-grid" id="resourceGrid"></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <div><h2>Content health</h2><p>Validation status and last check date</p></div>
+              <button class="text-button" onclick="toast('Validation queue','8 broken links queued for the content team.')">Open queue →</button>
+            </div>
+            <div id="contentHealthRows"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div><h2>Coverage by skill</h2><p>Mapped resources per skill, internal vs public</p></div>
+            </div>
+            <div class="panel-body pad-top" id="coverageBars"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ASSESSMENT LAB ============ -->
+      <section class="view" id="view-assessment">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Adaptive assessment engine</span>
+            <h1>Assessment lab</h1>
+            <p>Run the item-response-theory engine end to end: adaptive item selection, ability estimation, gap analysis, the learning loop and the final report card.</p>
+          </div>
+          <div class="page-actions">
+            <button class="button" id="labResetButton">Reset demo</button>
+          </div>
+        </div>
+
+        <div class="journey" id="labJourney"></div>
+
+        <div class="dashboard-grid wide-left">
+          <div>
+            <div class="panel" id="labAssessmentPanel">
+              <div class="panel-header">
+                <div>
+                  <h2>Adaptive assessment · Python</h2>
+                  <p>Difficulty is re-selected after every response until the standard error target is met</p>
+                </div>
+                <span class="tag" id="labItemCounter">Not started</span>
+              </div>
+              <div id="labAssessment"></div>
+            </div>
+
+            <div class="panel" id="labGap" style="display:none;margin-top:15px">
+              <div class="panel-header">
+                <div><h2>Gap analysis</h2><p>Assessed proficiency against the benchmark target</p></div>
+                <span class="tag" id="labGapTag">—</span>
+              </div>
+              <div class="panel-body" id="labGapBody"></div>
+            </div>
+
+            <div class="panel" id="labPlan" style="display:none;margin-top:15px">
+              <div class="panel-header">
+                <div><h2>Personalised learning plan</h2><p>Time-bound, gap-targeted, mixed internal and public content</p></div>
+                <span class="tag" id="labPlanTag">0 / 4 complete</span>
+              </div>
+              <div class="panel-body" style="padding-bottom:6px">
+                <div class="progress-track"><span id="labPlanBar" style="width:0%"></span></div>
+              </div>
+              <div id="labPlanRows"></div>
+              <div class="panel-footer">
+                <button class="button button-teal button-sm" id="labReassessButton" disabled>Take re-assessment (unlocks when a section is complete)</button>
+                <span class="small" style="font-size:10.5px;color:var(--muted-2)" id="labLoopNote">Loop runs until every skill is Met or the window expires</span>
+              </div>
+            </div>
+
+            <div id="labRepcard"></div>
+          </div>
+
+          <div>
+            <div class="panel">
+              <div class="panel-header">
+                <div><h2>Ability estimate (θ)</h2><p>Live IRT output</p></div>
+              </div>
+              <div class="panel-body">
+                <div class="theta-wrap">
+                  <div class="theta-scale">
+                    <div class="theta-ci" id="labThetaCi" style="left:50%;width:0"></div>
+                    <div class="theta-mark" id="labThetaMark" data-lbl="θ 0.00" style="left:50%"></div>
+                  </div>
+                  <div class="scale-labels"><span>Beginner</span><span>Intermediate</span><span>Advanced</span><span>Expert</span></div>
+                </div>
+                <div class="mt" style="margin-top:22px">
+                  <div class="fact-row"><span>Standard error</span><strong id="labSe">—</strong></div>
+                  <div class="fact-row"><span>Items administered</span><strong id="labItems">0</strong></div>
+                  <div class="fact-row"><span>Item bank (Python)</span><strong>184 items</strong></div>
+                  <div class="fact-row"><span>Stopping rule</span><strong>SE &lt; 0.30</strong></div>
+                  <div class="fact-row"><span>Assessed level</span><strong id="labLevel">—</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-top:15px">
+              <div class="panel-header">
+                <div><h2>My benchmark</h2><p>Data Analytics · Senior Associate · v3.2</p></div>
+              </div>
+              <div class="panel-body pad-top" id="labSkills"></div>
+            </div>
+
+            <div class="panel" style="margin-top:15px">
+              <div class="panel-header">
+                <div><h2>Engine events</h2><p>Event-driven loop telemetry</p></div>
+              </div>
+              <div class="panel-body pad-top" id="labLog"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ BLUEPRINT: ARCHITECTURE ============ -->
+      <section class="view" id="view-architecture">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Blueprint</span>
+            <h1>System architecture</h1>
+            <p>Service-oriented orchestration layer: clients, gateway, core domain services, an event-driven progress spine, supporting platform services and persistence.</p>
+          </div>
+        </div>
+
+        <div class="arch">
+          <div class="arch-layer">
+            <div class="arch-title">Experience layer <span class="tag">clients</span></div>
+            <div class="arch-row c3">
+              <div class="node"><b>Web workspace</b><small>This UI — candidate, manager, leader and L&amp;D views with RBAC-scoped navigation</small></div>
+              <div class="node"><b>Mobile app</b><small>React Native — assessments, plan updates and nudges on the go</small></div>
+              <div class="node"><b>Admin portal</b><small>L&amp;D console — taxonomy, content mapping, analytics exports</small></div>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-title">Edge <span class="tag">cross-cutting</span></div>
+            <div class="arch-row c4">
+              <div class="node navy"><b>API gateway</b><small>AuthN/Z, rate limiting, routing, request audit</small></div>
+              <div class="node"><b>SSO / identity</b><small>SAML 2.0, OAuth 2.0, OpenID Connect (Azure AD, Okta)</small></div>
+              <div class="node"><b>RBAC policy</b><small>Competency leader · candidate · manager · L&amp;D</small></div>
+              <div class="node"><b>Audit trail</b><small>Benchmark changes, responses, report cards</small></div>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-title">Core domain services <span class="tag">synchronous</span></div>
+            <div class="arch-row c3">
+              <div class="node accent"><b>Competency &amp; benchmark service</b><small>Taxonomy CRUD, benchmark matrices, versioning, assignment engine</small></div>
+              <div class="node accent"><b>Adaptive assessment service</b><small>Item bank, IRT ability estimation, dynamic item selection, scoring</small></div>
+              <div class="node accent"><b>Learning plan &amp; content service</b><small>Gap analysis, content matching, plan generation, completion tracking</small></div>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-title">Progress spine <span class="tag">event-driven</span></div>
+            <div class="arch-row c2">
+              <div class="node ok"><b>Progress tracking &amp; reporting</b><small>Skill state machine, re-assessment triggers, report-card generation and distribution</small></div>
+              <div class="node ok"><b>Event bus</b><small>benchmark.published · assessment.completed · plan.item.completed · reassessment.passed · reportcard.ready</small></div>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-title">Platform services <span class="tag">supporting</span></div>
+            <div class="arch-row c3">
+              <div class="node"><b>Notification service</b><small>SendGrid, Slack, Teams webhooks, in-app inbox and nudges</small></div>
+              <div class="node"><b>Analytics &amp; reporting DB</b><small>Completion and pass rates, bottleneck skills, time-to-close, scheduled exports</small></div>
+              <div class="node"><b>Integration layer</b><small>Workday / SuccessFactors (SCIM), LMS (LTI 1.3, SCORM, xAPI), public providers</small></div>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-title">Persistence <span class="tag">data</span></div>
+            <div class="arch-row c4">
+              <div class="node data"><b>PostgreSQL</b><small>Benchmarks, users, plans, responses</small></div>
+              <div class="node data"><b>Neo4j</b><small>Competency → skill → role graph</small></div>
+              <div class="node data"><b>Redis</b><small>Live assessment sessions, item selection cache</small></div>
+              <div class="node data"><b>Data lake</b><small>IRT calibration sets, ROI modelling</small></div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title">Module responsibilities</h2>
+        <div class="blueprint-grid" id="moduleCards"></div>
+
+        <h2 class="section-title">External integration points</h2>
+        <div class="blueprint-grid two" id="integrationCards"></div>
+      </section>
+
+      <!-- ============ BLUEPRINT: DATA MODEL ============ -->
+      <section class="view" id="view-data">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Blueprint</span>
+            <h1>Data model</h1>
+            <p>Fourteen core entities. <span class="mono" style="color:var(--teal)">PK</span> marks a primary key, <span class="mono" style="color:var(--blue)">FK</span> a foreign key.</p>
+          </div>
+        </div>
+        <div class="blueprint-grid" id="entityGrid"></div>
+        <h2 class="section-title">Relationships &amp; cardinality</h2>
+        <div id="relList"></div>
+        <div class="dashboard-grid" style="margin-top:15px">
+          <div class="bp-card">
+            <h3>Design notes</h3>
+            <ul id="designNotes"></ul>
+          </div>
+          <div class="bp-card">
+            <h3>Indexes &amp; access patterns</h3>
+            <div id="indexPatterns" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ BLUEPRINT: WORKFLOWS ============ -->
+      <section class="view" id="view-workflows">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Blueprint</span>
+            <h1>Workflows</h1>
+            <p>Four end-to-end flows and the mastery loop that runs until every skill is Met or the window expires.</p>
+          </div>
+        </div>
+        <div id="flowContainer"></div>
+        <h2 class="section-title">The mastery loop</h2>
+        <div class="loop-vis" id="loopVis"></div>
+      </section>
+
+      <!-- ============ BLUEPRINT: NFR ============ -->
+      <section class="view" id="view-nfr">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Blueprint</span>
+            <h1>Non-functional requirements</h1>
+            <p>Quality attributes that shape infrastructure choices, plus the assumptions and constraints the design depends on.</p>
+          </div>
+        </div>
+        <div class="blueprint-grid" id="nfrGrid"></div>
+        <div class="dashboard-grid" style="margin-top:15px">
+          <div class="bp-card accent-teal">
+            <h3>Assumptions</h3>
+            <ul id="assumptionList"></ul>
+          </div>
+          <div class="bp-card accent-coral">
+            <h3>Constraints</h3>
+            <ul id="constraintList"></ul>
+          </div>
+        </div>
+        <h2 class="section-title">Glossary</h2>
+        <div class="def-grid" id="glossaryGrid"></div>
+      </section>
+
+      <!-- ============ BLUEPRINT: ROADMAP ============ -->
+      <section class="view" id="view-roadmap">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Blueprint</span>
+            <h1>Roadmap &amp; open items</h1>
+            <p>Sequencing that puts benchmarks, assessment and the mastery loop in place before scaling analytics and optimisation.</p>
+          </div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="bp-card">
+            <h3 style="margin-bottom:16px">Implementation phases</h3>
+            <div class="timeline" id="roadmapTimeline"></div>
+          </div>
+          <div>
+            <div class="bp-card" style="margin-bottom:15px">
+              <h3>Open questions</h3>
+              <div style="margin-top:10px" id="openQuestions"></div>
+            </div>
+            <div class="bp-card">
+              <h3>Future enhancements</h3>
+              <div style="margin-top:10px" id="futureList"></div>
+            </div>
+          </div>
+        </div>
+        <h2 class="section-title">Programme analytics</h2>
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-header"><div><h2>Completion funnel</h2><p>All competencies · rolling 90 days</p></div></div>
+            <div class="panel-body" id="funnelBars"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h2>Bottleneck skills</h2><p>Share still not Met at timeline expiry</p></div></div>
+            <div class="panel-body" id="bottleneckBars"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DRAWER ================= -->
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head" id="drawerHead"></div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<!-- ================= MODAL (benchmark wizard) ================= -->
+<div class="modal-wrap" id="modalWrap" aria-hidden="true">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script src="app.js"></script>
+</body>
+</html>
